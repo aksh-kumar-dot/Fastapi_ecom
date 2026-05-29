@@ -33,11 +33,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
-
 
   backend:
     image: fastapi-ecom-backend:latest
@@ -66,14 +61,8 @@ services:
       - celery_result_backend
       - gunicorn_workers
     deploy:
-      update_config:
-        parallelism: 1
-        delay: 10s
-        order: start-first
-        failure_action: rollback
       restart_policy:
-        comdition: on-failure
-
+        condition: on-failure
 
   redis:
     image: redis:7-alpine
@@ -115,13 +104,8 @@ services:
       - celery_broker_url                                         
       - celery_result_backend
     deploy:
-      update_config:
-        parallelism: 1
-        delay: 10s
-        order: start-first
-        failure_action: rollback
       restart_policy:
-        comdition: on-failure
+        condition: on-failure
 
   migrate:
     image: fastapi-ecom-backend:latest

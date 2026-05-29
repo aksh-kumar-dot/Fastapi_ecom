@@ -12,4 +12,5 @@ __pycache__/
 .env
 
 # Docker
-*.log
+*.log__pycache__/
+*.pyc

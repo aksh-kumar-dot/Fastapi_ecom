@@ -1,15 +1,13 @@
-name:   CI-CD Pipeline
+name: CI-CD Pipeline
 
 on:
   push:
     branches:
       - main
 
-
 jobs:
     build-and-deploy:
         runs-on: self-hosted
-
 
         env:
           IMAGE_NAME: akshkumar121002/akash1210
@@ -21,16 +19,16 @@ jobs:
 
         - name: Docker login
           uses: docker/login-action@v2
-          with: 
+          with:
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_PASSWORD }}
-        
+
         - name: Build and push Docker image
           run: |
             IMAGE_TAG=${GITHUB_SHA}
             docker build -f Dockerfile.prod -t $IMAGE_NAME:$IMAGE_TAG .
             docker push $IMAGE_NAME:$IMAGE_TAG
-            echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV 
+            echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
         - name: Verify image can be pulled
           run: docker pull $IMAGE_NAME:${{ env.IMAGE_TAG }}
@@ -38,10 +36,9 @@ jobs:
         - name: Initialize Docker Swarm if not already
           run: |
             if ! docker node ls > /dev/null 2>&1; then
-                docker swarm init 
+                docker swarm init
             fi
-
-
+        
         - name: Ensure Docker secrets exist
           run: |
             create_secret () {
@@ -62,7 +59,6 @@ jobs:
             create_secret celery_broker_url "${{ secrets.CELERY_BROKER_URL }}"
             create_secret celery_result_backend "${{ secrets.CELERY_RESULT_BACKEND }}"
             create_secret gunicorn_workers "${{ secrets.GUNICORN_WORKERS }}"
-        
         - name: Update compose file with new image
           run: |
             sed -i "s|image: .*|image: $IMAGE_NAME:${{ env.IMAGE_TAG }}|g" compose.prod.swarm.yaml
